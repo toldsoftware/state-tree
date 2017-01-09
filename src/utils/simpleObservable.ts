@@ -8,11 +8,8 @@ export interface Subject<T> extends Observable<T> {
 
 export class SimpleObservable<T> {
 
-    private _history: T[] = [];
-    public get history() { return this._history.map(x => x); }
-
     protected _value: T;
-    // public get currentValue() { return this._value; }
+    public get value() { return this._value; }
 
     private _subscribers: Subscriber<T>[] = [];
 
@@ -23,7 +20,6 @@ export class SimpleObservable<T> {
     protected setValue(newValue: T) {
         let oldValue = this._value;
         this._value = newValue;
-        this._history.push(newValue);
 
         for (let x of this._subscribers) {
             if (x) {

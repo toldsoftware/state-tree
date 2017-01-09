@@ -1,5 +1,5 @@
-import { SimpleObservable, SimpleSubject } from './simpleObservable';
-import { delay } from './async';
+import { SimpleObservable, SimpleSubject } from './';
+import { delay } from './';
 
 export interface StateStorage {
     getStateChanges(): Promise<string[]>;

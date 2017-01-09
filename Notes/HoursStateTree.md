@@ -43,9 +43,9 @@
 	- .get and .set are inconsistent 
 	- array methods will be easier to implement
 
-##
+## 14:40-15:44
 
-- Arrays
+- Add Arrays
 
 ##
 

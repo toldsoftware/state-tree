@@ -97,3 +97,68 @@ describe('stateTree with nested state', () => {
     });
 
 });
+
+
+
+describe('stateTree with array', () => {
+
+    let state = {
+        items: [
+            { text: 'A' },
+            { text: 'B' },
+            { text: 'C' },
+        ]
+    };
+
+    type Item = typeof state.items[0];
+
+    it('should get value', () => {
+        let stateTree = toStateTree(state);
+        let result = stateTree.items.asArray<Item>()[0].text.value;
+        expect(result).toEqual('A');
+    });
+
+    it('should notify of get value', () => {
+        let stateTree = toStateTree(state);
+        let v = stateTree.items.asArray<Item>()[0].text.value;
+        expect(stateTree.notifications.length).toEqual(1);
+        expect(stateTree.notifications[0].kind).toEqual(StateNotificationKind.getValue);
+        expect(stateTree.notifications[0].stateNodeFullPath).toEqual('.items[0].text');
+        expect(stateTree.notifications[0].valueJson).toEqual(JSON.stringify('A'));
+    });
+
+    it('should notify of set value', () => {
+        let stateTree = toStateTree(state);
+        expect(stateTree.notifications.length).toEqual(0);
+
+        stateTree.items.asArray<Item>()[0].text.value = 'B';
+        expect(stateTree.notifications.length).toEqual(1);
+        expect(stateTree.notifications[0].kind).toEqual(StateNotificationKind.setValue);
+        expect(stateTree.notifications[0].stateNodeFullPath).toEqual('.items[0].text');
+        expect(stateTree.notifications[0].valueJson).toEqual(JSON.stringify('B'));
+        expect(stateTree.notifications[0].valueJson_old).toEqual(JSON.stringify('A'));
+    });
+
+    it('should observe set value', () => {
+        let stateTree = toStateTree(state);
+        let result = null;
+        stateTree.items.asArray<Item>()[0].text.subscribe(x => result = x);
+        expect(result).toEqual(null);
+        stateTree.items.asArray<Item>()[0].text.value = 'B';
+        expect(result).toEqual('B');
+    });
+
+    it('should reconstruct state tree after state change', () => {
+        let stateTree = toStateTree(state);
+        stateTree.items.asArray<Item>()[0].text.value = 'B';
+        let result = stateTree.root.value;
+        expect(result).toEqual({
+            items: [
+                { text: 'B' },
+                { text: 'B' },
+                { text: 'C' },
+            ]
+        });
+    });
+
+});

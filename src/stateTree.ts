@@ -21,7 +21,7 @@ export function toStateTree<T extends StateData>(stateData: T): StateNodeType<T>
 }
 
 function createStateNode<T>(tree: StateTree<any>, parent: StateNode<any>, path: string, source: T) {
-    let node = new StateNode(tree, parent, path, source);
+    let node = new StateNode(tree, parent, path, source, source instanceof Array);
 
     if (typeof source === 'object') {
         for (let k in source) {
@@ -33,17 +33,26 @@ function createStateNode<T>(tree: StateTree<any>, parent: StateNode<any>, path: 
 }
 
 export class StateNode<T> extends SimpleSubject<T> {
-    fullPath: string;
-    constructor(public tree: StateTree<any>, public parent: StateNode<any>, public path: string, initialValue: T) {
+    _path: string;
+    _fullPath: string;
+    get path() { return this._path; }
+    set path(v: string) {
+        this._path = v;
+        this._fullPath = !this.parent ? this.path : this.parent.fullPath + (this.parent && this.parent.isArray ? `[${this._path}]` : `.${this._path}`);
+    }
+
+    get fullPath() { return this._fullPath; }
+
+    constructor(public tree: StateTree<any>, public parent: StateNode<any>, path: string, initialValue: T, public isArray: boolean) {
         super(initialValue);
-        this.fullPath = !this.parent ? this.path : this.parent.fullPath + '.' + this.path;
+        this.path = path;
     }
 
     protected getValue(shouldSkipLog = false): T {
         // Rebuild value from children values
         let value = this._value;
         if (typeof value === 'object') {
-            let reconstructed = {} as any;
+            let reconstructed = (this.isArray ? [] : {}) as any;
 
             for (let k in value) {
                 (reconstructed as any)[k] = (this as any)[k].getValue();
@@ -90,7 +99,16 @@ export class StateNode<T> extends SimpleSubject<T> {
         this.notifySubscribers(newValue, oldValue);
         this.tree.notify_setValue(this.fullPath, newValue, oldValue);
     }
+
+    asArray<U>(): StateNodeType<U>[] {
+        return this as any;
+    }
+
 }
+
+// export class StateNodeArray<T extends any[]>{
+
+// }
 
 export class StateTree<T> {
 

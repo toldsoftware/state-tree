@@ -28,6 +28,17 @@
 
 - Use .value for reading value
 
+## 1:47-2:07
+
+- FIX .value of parent nodes will not return new values of child nodes (but instead snapshot of when the parent was changed)
+	- Should rebuild the parent with children upon getValue()
+
+
+##
+
+- Test changes of branch with nested values
+- Test changes to tree structure
+
 ##
 
 - Convert Changes of StateTree to StateChanges 

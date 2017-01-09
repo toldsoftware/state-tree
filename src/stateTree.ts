@@ -117,6 +117,22 @@ export class StateNode extends SimpleSubject<any> {
         super(initialValue);
         this.fullPath = !this.parent ? this.path : this.parent.fullPath + '.' + this.path;
     }
+
+    getValue() {
+        // Rebuild value from children values
+        let value = super.getValue();
+        if (typeof value !== 'object') {
+            return value;
+        }
+
+        let r = {};
+
+        for (let k in value) {
+            (r as any)[k] = (this as any)[k].getValue();
+        }
+
+        return r;
+    }
 }
 
 export class StateTree extends StateNode {

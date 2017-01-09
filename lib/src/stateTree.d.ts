@@ -13,6 +13,7 @@ export declare class StateNode extends SimpleSubject<any> {
     path: string;
     fullPath: string;
     constructor(parent: StateNode, path: string, initialValue: any);
+    getValue(): any;
 }
 export declare class StateTree extends StateNode {
     notifications: StateNotification[];

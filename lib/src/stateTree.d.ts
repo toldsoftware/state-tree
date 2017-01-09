@@ -5,16 +5,18 @@ export declare type StateNodeType<T> = {
 };
 export declare function toStateTree<T extends StateData>(stateData: T): StateNodeType<T> & StateTree<T>;
 export declare class StateNode<T> extends SimpleSubject<T> {
-    tree: StateTree<any>;
-    parent: StateNode<any>;
-    isArray: boolean;
+    _tree: StateTree<any>;
+    _parent: StateNode<any>;
+    _isArray: boolean;
     _path: string;
     _fullPath: string;
     path: string;
     readonly fullPath: string;
-    constructor(tree: StateTree<any>, parent: StateNode<any>, path: string, initialValue: T, isArray: boolean);
-    protected getValue(shouldSkipLog?: boolean): T;
-    protected setValue(newValue: T): void;
+    constructor(_tree: StateTree<any>, _parent: StateNode<any>, path: string, initialValue: T, _isArray: boolean);
+    protected getChildrenNames(): string[];
+    protected getValue(shouldNotifyTree?: boolean): T;
+    value_merge: T;
+    protected setValue(newValue: T, shouldRemoveMissing?: boolean, shouldNotifyTree?: boolean): void;
     asArray<U>(): StateNodeType<U>[];
 }
 export declare class StateTree<T> {

@@ -38,66 +38,110 @@ export class StateNode<T> extends SimpleSubject<T> {
     get path() { return this._path; }
     set path(v: string) {
         this._path = v;
-        this._fullPath = !this.parent ? this.path : this.parent.fullPath + (this.parent && this.parent.isArray ? `[${this._path}]` : `.${this._path}`);
+        this._fullPath = !this._parent ? this.path : this._parent.fullPath + (this._parent && this._parent._isArray ? `[${this._path}]` : `.${this._path}`);
     }
 
     get fullPath() { return this._fullPath; }
 
-    constructor(public tree: StateTree<any>, public parent: StateNode<any>, path: string, initialValue: T, public isArray: boolean) {
+    constructor(public _tree: StateTree<any>, public _parent: StateNode<any>, path: string, initialValue: T, public _isArray: boolean) {
         super(initialValue);
         this.path = path;
     }
 
-    protected getValue(shouldSkipLog = false): T {
+    protected getChildrenNames() {
+        let node = this as any;
+        let keys = [];
+
+        for (let k in node) {
+            if (k[0] !== '_') {
+                let prop = Object.getOwnPropertyDescriptor(node, k);
+                if (prop != null && prop.get == null) {
+                    let child = node[k];
+                    if (child != null
+                        && child instanceof StateNode
+                        && child._parent === node
+                    ) {
+                        keys.push(k);
+                    }
+                }
+            }
+        }
+
+        return keys;
+    }
+
+    protected getValue(shouldNotifyTree = true): T {
         // Rebuild value from children values
         let value = this._value;
-        if (typeof value === 'object') {
-            let reconstructed = (this.isArray ? [] : {}) as any;
+        if (value != null && typeof value === 'object') {
+            let reconstructed = (this._isArray ? [] : {}) as any;
 
-            for (let k in value) {
-                (reconstructed as any)[k] = (this as any)[k].getValue();
+            for (let k of this.getChildrenNames()) {
+                let kNode = (this as any)[k];
+                if (kNode == null) {
+                    let breakdance = true;
+                }
+                let kValue = kNode.getValue();
+                if (kValue != null) {
+                    (reconstructed as any)[k] = kValue;
+                }
             }
 
             value = reconstructed;
         }
 
-        if (!shouldSkipLog) { this.tree.notify_getValue(this.fullPath, value); }
+        if (shouldNotifyTree) { this._tree.notify_getValue(this.fullPath, value); }
         return value;
     }
 
-    protected setValue(newValue: T) {
-        let oldValue = this.getValue(true);
+    set value_merge(newValue: T) {
+        this.setValue(newValue, false);
+    }
+
+    protected setValue(newValue: T, shouldRemoveMissing = true, shouldNotifyTree = true) {
+        let oldValue = this.getValue(false);
 
         if (newValue === DELETE) { newValue = null; }
-
         this._value = newValue;
 
-        let tree = this.tree;
         let node = this as any;
 
         if (newValue != null) {
+            let keys_set: string[] = [];
             for (let k in newValue) {
                 let kValue = newValue[k];
 
                 if (!node[k]) {
                     // Create State Nodes for new Properties
-                    node[k] = createStateNode(tree, node, k, kValue);
+                    node[k] = createStateNode(this._tree, node, k, kValue);
                 } else {
                     // Set Nested Value
-                    node[k].setValue(kValue);
+                    node[k].setValue(kValue, shouldRemoveMissing, false);
+                }
+
+                keys_set.push(k);
+            }
+
+            // Missing keys
+            if (shouldRemoveMissing) {
+                let keys_missing = this.getChildrenNames().filter(x => keys_set.indexOf(x) < 0);
+                for (let k of keys_missing) {
+                    node[k].setValue(null, shouldRemoveMissing, false);
                 }
             }
         } else {
-            // Pass Null Down Branch
-            for (let k in node) {
-                if (node[k] instanceof StateNode) {
-                    node[k].setValue(null);
+            if (shouldRemoveMissing) {
+                // Pass Null Down Branch
+                for (let k of this.getChildrenNames()) {
+                    node[k].setValue(null, shouldRemoveMissing, false);
                 }
             }
         }
 
         this.notifySubscribers(newValue, oldValue);
-        this.tree.notify_setValue(this.fullPath, newValue, oldValue);
+        if (shouldNotifyTree) {
+            this._tree.notify_setValue(this.fullPath, newValue, oldValue);
+        }
     }
 
     asArray<U>(): StateNodeType<U>[] {

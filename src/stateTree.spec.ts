@@ -1,4 +1,4 @@
-import { toStateTree, StateNotificationKind } from './';
+import { toStateTree, StateNotificationKind, DELETE } from './';
 
 describe('stateTree with simple state', () => {
 
@@ -89,11 +89,97 @@ describe('stateTree with nested state', () => {
         expect(result).toEqual('B');
     });
 
+    it('should reconstruct state tree', () => {
+        let stateTree = toStateTree(state);
+        let result = stateTree.root.value;
+        expect(result).toEqual({ nested: { nested: { text: 'A' } } });
+    });
+
     it('should reconstruct state tree after state change', () => {
         let stateTree = toStateTree(state);
         stateTree.nested.nested.text.value = 'B';
         let result = stateTree.root.value;
         expect(result).toEqual({ nested: { nested: { text: 'B' } } });
+    });
+
+    it('should handle null of state structure', () => {
+        let stateTree = toStateTree(state);
+        let before = stateTree.root.value;
+        expect(before).toEqual({
+            nested: {
+                nested: {
+                    text: 'A'
+                }
+            }
+        });
+
+        stateTree.nested.nested.text.value = null;
+        let result = stateTree.root.value;
+        expect(result).toEqual({
+            nested: {
+                nested: {
+                }
+            }
+        });
+    });
+
+    it('should handle DELETE of state structure', () => {
+        let stateTree = toStateTree(state);
+        stateTree.nested.nested.text.value = DELETE;
+        let result = stateTree.root.value;
+        expect(result).toEqual({
+            nested: {
+                nested: {
+                }
+            }
+        });
+    });
+
+    it('should reconstruct state tree after state structure replaced', () => {
+        let stateTree = toStateTree(state);
+        let before = stateTree.root.value;
+        expect(before).toEqual({
+            nested: {
+                nested: {
+                    text: 'A'
+                }
+            }
+        });
+
+        stateTree.nested.value = { nestedB: { text: 'B' } } as any;
+        let result = stateTree.root.value;
+        expect(result).toEqual({
+            nested: {
+                nestedB: {
+                    text: 'B'
+                }
+            }
+        });
+    });
+
+    it('should reconstruct state tree after state structure merged', () => {
+        let stateTree = toStateTree(state);
+        let before = stateTree.root.value;
+        expect(before).toEqual({
+            nested: {
+                nested: {
+                    text: 'A'
+                }
+            }
+        });
+
+        stateTree.nested.value_merge = { nestedB: { text: 'B' } } as any;
+        let result = stateTree.root.value;
+        expect(result).toEqual({
+            nested: {
+                nested: {
+                    text: 'A'
+                },
+                nestedB: {
+                    text: 'B'
+                }
+            }
+        });
     });
 
 });

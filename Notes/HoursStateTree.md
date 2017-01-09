@@ -15,9 +15,19 @@
 	- OldStateDelta
 	- Metadata
 
-## 22:10
+## 22:10-01:30
 
-- Convert StateData to ObservableStateTree
+- Convert StateData to StateTree
+- FAIL: Cannot return a value with get and an object with subscribe
+	- OPTION 1: Use .prop.value for value get and set
+	- OPTION 1B: Use .prop.value only for value get (set still works without .value)
+	- OPTION 2: Use .prop_node for .subscribe, .unsubscribe, etc.
+	- OPTION 3: Use .prop_subscribe, .prop_unsubscribe, etc.
+
+##
+
+- Convert Changes of StateTree to StateChanges 
+
 
 ## 
 

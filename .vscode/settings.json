@@ -13,7 +13,7 @@
         "tslint.json": true,
 
         // Generated for Deployment (In Repo)
-        "lib": true,
+        // "lib": true,
         "deployment": true,
         ".deployment": true,
 

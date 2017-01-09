@@ -6,16 +6,14 @@ export interface Observable<T> {
 export interface Subject<T> extends Observable<T> {
     emit(newValue: T): void;
 }
-export declare class SimpleObservable<T> {
+export declare class SimpleSubject<T> implements Subject<T> {
     protected _value: T;
+    value: T;
     getValue(): T;
+    setValue(v: T): void;
     private _subscribers;
     constructor(initialValue: T);
-    protected setValue(newValue: T): void;
     subscribe(subscriber: Subscriber<T>): number;
     unsubscribe(iSubscriber: number): void;
-}
-export declare class SimpleSubject<T> extends SimpleObservable<T> {
-    constructor(initialValue: T);
     emit(t: T): void;
 }

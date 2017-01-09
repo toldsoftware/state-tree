@@ -3,6 +3,7 @@ import { StateData, DELETE } from './stateData';
 
 export type StateNodeType<T> = {
 [P in keyof T]: StateNodeType<T[P]> & {
+    value?: T;
     subscribe?(subscriber: Subscriber<T>): void;
     unsubscribe?(iSubscriber: number): void;
 };
@@ -35,12 +36,13 @@ function toStateNode(tree: StateTree, path: string, target: any, source: any) {
 function toProperty(tree: StateTree, host: StateNode, name: string, value: StateNode) {
     addProperty(host, name, () => {
         tree.notify_getValue(value);
-        let val = value.getValue();
-        if (val['subscribe'] == null) {
-            val['subscribe'] = value.subscribe;
-            val['unsubscribe'] = value.unsubscribe;
-        }
-        return val;
+        // let val = value.getValue();
+        // if (val['subscribe'] == null) {
+        //     val['subscribe'] = value.subscribe;
+        //     val['unsubscribe'] = value.unsubscribe;
+        // }
+        // return val;
+        return value as any;
     }, v => {
         tree.notify_setValue(value, v);
         value.setValue(v);

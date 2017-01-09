@@ -8,7 +8,7 @@ export interface Subject<T> extends Observable<T> {
     emit(newValue: T): void;
 }
 
-export class SimpleSubject<T> {
+export class SimpleSubject<T> implements Subject<T> {
 
     protected _value: T;
     public get value() { return this.getValue(); }

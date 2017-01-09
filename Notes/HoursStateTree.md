@@ -15,7 +15,7 @@
 	- OldStateDelta
 	- Metadata
 
-## 22:10-01:30
+## 22:10-1:30
 
 - Convert StateData to StateTree
 - FAIL: Cannot return a value with get and an object with subscribe
@@ -23,6 +23,10 @@
 	- OPTION 1B: Use .prop.value only for value get (set still works without .value)
 	- OPTION 2: Use .prop_node for .subscribe, .unsubscribe, etc.
 	- OPTION 3: Use .prop_subscribe, .prop_unsubscribe, etc.
+
+## 1:30-1:47
+
+- Use .value for reading value
 
 ##
 

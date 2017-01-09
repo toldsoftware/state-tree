@@ -1,4 +1,4 @@
-import { SimpleObservable, SimpleSubject } from './';
+import { SimpleSubject } from './';
 import { delay } from './';
 
 export interface StateStorage {

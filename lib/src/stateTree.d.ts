@@ -1,25 +1,24 @@
-import { Subscriber, SimpleSubject } from './utils';
+import { SimpleSubject } from './utils';
 import { StateData } from './stateData';
 export declare type StateNodeType<T> = {
-    [P in keyof T]: StateNodeType<T[P]> & {
-        value?: T;
-        subscribe?(subscriber: Subscriber<T>): void;
-        unsubscribe?(iSubscriber: number): void;
-    };
+    [P in keyof T]: StateNodeType<T[P]> & StateNode<T[P]>;
 };
-export declare function toStateTree<T extends StateData>(stateData: T): StateNodeType<T> & StateTree;
-export declare class StateNode extends SimpleSubject<any> {
-    parent: StateNode;
+export declare function toStateTree<T extends StateData>(stateData: T): StateNodeType<T> & StateTree<T>;
+export declare class StateNode<T> extends SimpleSubject<T> {
+    tree: StateTree<any>;
+    parent: StateNode<any>;
     path: string;
     fullPath: string;
-    constructor(parent: StateNode, path: string, initialValue: any);
-    getValue(): any;
+    constructor(tree: StateTree<any>, parent: StateNode<any>, path: string, initialValue: T);
+    protected getValue(shouldSkipLog?: boolean): T;
+    protected setValue(newValue: T): void;
 }
-export declare class StateTree extends StateNode {
+export declare class StateTree<T> {
+    root: StateNode<T>;
     notifications: StateNotification[];
-    constructor(initialValue?: any);
-    notify_getValue(stateNode: StateNode): void;
-    notify_setValue(stateNode: StateNode, value: any): void;
+    constructor();
+    notify_getValue<U>(stateNodeFullPath: string, value: U): void;
+    notify_setValue<U>(stateNodeFullPath: string, value: U, oldValue: U): void;
 }
 export interface StateNotification {
     kind: StateNotificationKind;

@@ -34,6 +34,19 @@
 	- Should rebuild the parent with children upon getValue()
 
 
+# 2017-01-09
+
+## 13:00-14:39 
+
+- Change to always use .value for get and set:
+	- get accessor is getting called everytime for parents, causing the sub tree to be reconstructed just to use do notation down the tree
+	- .get and .set are inconsistent 
+	- array methods will be easier to implement
+
+##
+
+- Arrays
+
 ##
 
 - Test changes of branch with nested values

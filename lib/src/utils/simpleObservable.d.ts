@@ -9,8 +9,9 @@ export interface Subject<T> extends Observable<T> {
 export declare class SimpleSubject<T> implements Subject<T> {
     protected _value: T;
     value: T;
-    getValue(): T;
-    setValue(v: T): void;
+    protected getValue(): T;
+    protected setValue(v: T): void;
+    protected notifySubscribers(newValue: T, oldValue: T): void;
     private _subscribers;
     constructor(initialValue: T);
     subscribe(subscriber: Subscriber<T>): number;

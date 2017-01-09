@@ -12,7 +12,7 @@ describe('stateTree with simple state', () => {
 
     it('should notify of get value', () => {
         let stateTree = toStateTree(state);
-        let v = stateTree.text;
+        let v = stateTree.text.value;
         expect(stateTree.notifications.length).toEqual(1);
         expect(stateTree.notifications[0].kind).toEqual(StateNotificationKind.getValue);
         expect(stateTree.notifications[0].stateNodeFullPath).toEqual('.text');
@@ -21,7 +21,7 @@ describe('stateTree with simple state', () => {
 
     it('should notify of set value', () => {
         let stateTree = toStateTree(state);
-        stateTree.text = 'B';
+        stateTree.text.value = 'B';
         expect(stateTree.notifications.length).toEqual(1);
         expect(stateTree.notifications[0].kind).toEqual(StateNotificationKind.setValue);
         expect(stateTree.notifications[0].stateNodeFullPath).toEqual('.text');
@@ -34,18 +34,18 @@ describe('stateTree with simple state', () => {
         let result = null;
         stateTree.text.subscribe(x => result = x);
         expect(result).toEqual(null);
-        stateTree.text = 'B';
+        stateTree.text.value = 'B';
         expect(result).toEqual('B');
     });
 
-    // it('should observe set value with .value', () => {
-    //     let stateTree = toStateTree(state);
-    //     let result = null;
-    //     stateTree.text.subscribe(x => result = x);
-    //     expect(result).toEqual(null);
-    //     stateTree.text.value = 'B';
-    //     expect(result).toEqual('B');
-    // });
+    it('should observe set value with .value', () => {
+        let stateTree = toStateTree(state);
+        let result = null;
+        stateTree.text.subscribe(x => result = x);
+        expect(result).toEqual(null);
+        stateTree.text.value = 'B';
+        expect(result).toEqual('B');
+    });
 
 });
 
@@ -61,24 +61,23 @@ describe('stateTree with nested state', () => {
 
     it('should notify of get value', () => {
         let stateTree = toStateTree(state);
-        let v = stateTree.nested.nested.text;
-        // expect(stateTree.notifications.length).toEqual(3);
-        expect(stateTree.notifications[2].kind).toEqual(StateNotificationKind.getValue);
-        expect(stateTree.notifications[2].stateNodeFullPath).toEqual('.nested.nested.text');
-        expect(stateTree.notifications[2].valueJson).toEqual(JSON.stringify('A'));
+        let v = stateTree.nested.nested.text.value;
+        expect(stateTree.notifications.length).toEqual(1);
+        expect(stateTree.notifications[0].kind).toEqual(StateNotificationKind.getValue);
+        expect(stateTree.notifications[0].stateNodeFullPath).toEqual('.nested.nested.text');
+        expect(stateTree.notifications[0].valueJson).toEqual(JSON.stringify('A'));
     });
 
     it('should notify of set value', () => {
         let stateTree = toStateTree(state);
         expect(stateTree.notifications.length).toEqual(0);
-        stateTree.nested.nested.text = 'B';
-        console.log(stateTree.notifications);
-        let len = stateTree.notifications.length;
-        // expect(stateTree.notifications.length).toEqual(3);
-        expect(stateTree.notifications[len - 1].kind).toEqual(StateNotificationKind.setValue);
-        expect(stateTree.notifications[len - 1].stateNodeFullPath).toEqual('.nested.nested.text');
-        expect(stateTree.notifications[len - 1].valueJson).toEqual(JSON.stringify('B'));
-        expect(stateTree.notifications[len - 1].valueJson_old).toEqual(JSON.stringify('A'));
+
+        stateTree.nested.nested.text.value = 'B';
+        expect(stateTree.notifications.length).toEqual(1);
+        expect(stateTree.notifications[0].kind).toEqual(StateNotificationKind.setValue);
+        expect(stateTree.notifications[0].stateNodeFullPath).toEqual('.nested.nested.text');
+        expect(stateTree.notifications[0].valueJson).toEqual(JSON.stringify('B'));
+        expect(stateTree.notifications[0].valueJson_old).toEqual(JSON.stringify('A'));
     });
 
     it('should observe set value', () => {
@@ -86,14 +85,14 @@ describe('stateTree with nested state', () => {
         let result = null;
         stateTree.nested.nested.text.subscribe(x => result = x);
         expect(result).toEqual(null);
-        stateTree.nested.nested.text = 'B';
+        stateTree.nested.nested.text.value = 'B';
         expect(result).toEqual('B');
     });
 
     it('should reconstruct state tree after state change', () => {
         let stateTree = toStateTree(state);
-        stateTree.nested.nested.text = 'B';
-        let result = stateTree.value;
+        stateTree.nested.nested.text.value = 'B';
+        let result = stateTree.root.value;
         expect(result).toEqual({ nested: { nested: { text: 'B' } } });
     });
 

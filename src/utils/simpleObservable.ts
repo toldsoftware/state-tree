@@ -13,14 +13,17 @@ export class SimpleSubject<T> implements Subject<T> {
     protected _value: T;
     public get value() { return this.getValue(); }
     public set value(newValue: T) { this.setValue(newValue); }
-    public getValue() { return this._value; }
-    public setValue(v: T) {
+    protected getValue() { return this._value; }
+    protected setValue(v: T) {
         let oldValue = this._value;
         this._value = v;
+        this.notifySubscribers(v, oldValue);
+    }
 
+    protected notifySubscribers(newValue: T, oldValue: T) {
         for (let x of this._subscribers) {
             if (x) {
-                x(v, oldValue);
+                x(newValue, oldValue);
             }
         }
     }
@@ -28,7 +31,7 @@ export class SimpleSubject<T> implements Subject<T> {
     private _subscribers: Subscriber<T>[] = [];
 
     constructor(initialValue: T) {
-        this.setValue(initialValue);
+        this._value = initialValue;
     }
 
     public subscribe(subscriber: Subscriber<T>) {

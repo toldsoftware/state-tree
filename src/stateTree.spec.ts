@@ -323,4 +323,36 @@ describe('stateTree with array', () => {
         expect(stateTree.notifications[0].valueJson).toEqual(JSON.stringify([{ text: 'AA' }]));
     });
 
+    it('should have correct paths and values after array remove', () => {
+        let stateTree = toStateTree(state);
+
+        let n: ArrayEventArgs<any> = null;
+        stateTree.items.subscribeArray(x => n = x);
+        stateTree.items.asArrayOperators<Item>().removeAt(1);
+
+        expect(stateTree.items.asArray<Item>()[0].fullPath).toEqual('.items[0]');
+        expect(stateTree.items.asArray<Item>()[1].fullPath).toEqual('.items[1]');
+        expect(stateTree.items.asArray<Item>()[2]).toBeNull();
+
+        expect(stateTree.items.asArray<Item>()[0].text.value).toEqual('A');
+        expect(stateTree.items.asArray<Item>()[1].text.value).toEqual('C');
+    });
+
+    it('should notify on array remove', () => {
+        let stateTree = toStateTree(state);
+
+        let n: ArrayEventArgs<any> = null;
+        stateTree.items.subscribeArray(x => n = x);
+        stateTree.items.asArrayOperators<Item>().removeAt(1);
+
+        expect(n.removedItems).toEqual([{ text: 'B' }]);
+
+        // console.log(stateTree.notifications);
+
+        expect(stateTree.notifications.length).toEqual(1);
+        expect(stateTree.notifications[0].kind).toEqual(StateNotificationKind[StateNotificationKind.removeItems]);
+        expect(stateTree.notifications[0].stateNodeFullPath).toEqual('.items[1]');
+        expect(stateTree.notifications[0].valueJson).toEqual(JSON.stringify([{ text: 'B' }]));
+    });
+
 });

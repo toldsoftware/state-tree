@@ -230,7 +230,7 @@ export class StateNode<T> extends SimpleSubject<T> {
         // Delete removed items
         for (let i = 0; i < count; i++) {
             let iTarget = iStart + i;
-            node['' + iTarget].value = DELETE;
+            node[iTarget].setValue(DELETE, true, false);
         }
 
         // Move items to iStart
@@ -238,8 +238,9 @@ export class StateNode<T> extends SimpleSubject<T> {
         for (let i = iStart + count; i < len; i++) {
             let iSource = i;
             let iTarget = i - count;
-            node['' + iTarget] = node['' + iSource];
-            node['' + iTarget] = null;
+            node[iTarget] = node[iSource];
+            node[iTarget].path = iTarget;
+            node[iSource] = null;
         }
 
         this._arraySubscripton.notifySubscribers({

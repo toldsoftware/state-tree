@@ -54,15 +54,15 @@ export class StateNode<T> extends SimpleSubject<T> {
     get path() { return this._path; }
     set path(v: string) {
         this._path = '' + v;
-        this._fullPath = !this._parent ? this.path : this._parent.fullPath + (this._parent && this._parent._isArray ? `[${this._path}]` : `.${this._path}`);
+        this._fullPath = !this._parent ? this.path : this._parent.fullPath + (this._parent && this._parent.isArray ? `[${this._path}]` : `.${this._path}`);
     }
 
     get fullPath() { return this._fullPath; }
 
-    constructor(private _tree: StateTree<any>, private _parent: StateNode<any>, path: string, initialValue: T, private _isArray: boolean) {
+    constructor(private _tree: StateTree<any>, private _parent: StateNode<any>, path: string, initialValue: T, public isArray: boolean) {
         super(initialValue);
         this.path = path;
-        if (_isArray) {
+        if (isArray) {
             this._arraySubscripton = new Subscription<ArrayEventArgs<any>>();
         }
     }
@@ -93,7 +93,7 @@ export class StateNode<T> extends SimpleSubject<T> {
         // Rebuild value from children values
         let value = this._value;
         if (value != null && typeof value === 'object') {
-            let reconstructed = (this._isArray ? [] : {}) as any;
+            let reconstructed = (this.isArray ? [] : {}) as any;
 
             for (let k of this.getChildrenNames()) {
                 let kNode = (this as any)[k];
@@ -173,24 +173,24 @@ export class StateNode<T> extends SimpleSubject<T> {
     }
 
     subscribeArray<U>(subscriber: Subscriber<ArrayEventArgs<U>>) {
-        if (!this._isArray) { throw 'this is not an array'; }
+        if (!this.isArray) { throw 'this is not an array'; }
         return this._arraySubscripton.subscribe(subscriber);
     }
 
     unsubscribeArray(iSubscriber: number) {
-        if (!this._isArray) { throw 'this is not an array'; }
+        if (!this.isArray) { throw 'this is not an array'; }
         return this._arraySubscripton.unsubscribe(iSubscriber);
     }
 
     push(...values: any[]): void {
-        if (!this._isArray) { throw 'this is not an array'; }
+        if (!this.isArray) { throw 'this is not an array'; }
 
         let array = this.getValue(false) as any as any[];
         this.insert(array.length, ...values);
     }
 
     insert(iStart: number, ...values: any[]): void {
-        if (!this._isArray) { throw 'this is not an array'; }
+        if (!this.isArray) { throw 'this is not an array'; }
 
         let node = this as any;
         let array = this.getValue(false) as any as any[];
@@ -221,7 +221,7 @@ export class StateNode<T> extends SimpleSubject<T> {
     }
 
     removeAt(iStart: number, count = 1): void {
-        if (!this._isArray) { throw 'this is not an array'; }
+        if (!this.isArray) { throw 'this is not an array'; }
 
         let node = this as any;
         let array = this.getValue(false) as any as any[];
@@ -261,8 +261,17 @@ export class StateTree<T> {
 
     root: StateNode<T>;
     notifications: StateNotification[] = [];
+    subsription = new Subscription<StateNotification>();
 
     constructor() {
+    }
+
+    subscribe(subscriber: Subscriber<StateNotification>) {
+        return this.subsription.subscribe(subscriber);
+    }
+
+    unsubscribe(iSubscriber: number) {
+        return this.subsription.unsubscribe(iSubscriber);
     }
 
     notify_getValue<U>(stateNodeFullPath: string, value: U) {
@@ -271,6 +280,7 @@ export class StateTree<T> {
             stateNodeFullPath: stateNodeFullPath,
             valueJson: JSON.stringify(value),
         });
+        this.subsription.notifySubscribers(this.notifications[this.notifications.length - 1]);
     }
 
     notify_setValue<U>(stateNodeFullPath: string, value: U, oldValue: U) {
@@ -280,6 +290,7 @@ export class StateTree<T> {
             valueJson: JSON.stringify(value),
             valueJson_old: JSON.stringify(oldValue),
         });
+        this.subsription.notifySubscribers(this.notifications[this.notifications.length - 1]);
     }
 
     notify_addItems<U>(stateNodeFullPath: string, items: U[]) {
@@ -288,6 +299,7 @@ export class StateTree<T> {
             stateNodeFullPath: stateNodeFullPath,
             valueJson: JSON.stringify(items),
         });
+        this.subsription.notifySubscribers(this.notifications[this.notifications.length - 1]);
     }
 
     notify_removeItems<U>(stateNodeFullPath: string, items: U[]) {
@@ -296,6 +308,7 @@ export class StateTree<T> {
             stateNodeFullPath: stateNodeFullPath,
             valueJson: JSON.stringify(items),
         });
+        this.subsription.notifySubscribers(this.notifications[this.notifications.length - 1]);
     }
 }
 

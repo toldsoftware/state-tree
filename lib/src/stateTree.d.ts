@@ -1,4 +1,4 @@
-import { Subscriber, SimpleSubject } from './utils';
+import { Subscriber, SimpleSubject, Subscription } from './utils';
 import { StateData } from './stateData';
 export declare type StateNodeType<T> = {
     [P in keyof T]: StateNodeType<T[P]> & StateNode<T[P]>;
@@ -18,13 +18,13 @@ export declare function toStateTree<T extends StateData>(stateData: T): StateNod
 export declare class StateNode<T> extends SimpleSubject<T> {
     private _tree;
     private _parent;
-    private _isArray;
+    isArray: boolean;
     private _arraySubscripton;
     private _path;
     private _fullPath;
     path: string;
     readonly fullPath: string;
-    constructor(_tree: StateTree<any>, _parent: StateNode<any>, path: string, initialValue: T, _isArray: boolean);
+    constructor(_tree: StateTree<any>, _parent: StateNode<any>, path: string, initialValue: T, isArray: boolean);
     protected getChildrenNames(): string[];
     protected getValue(shouldNotifyTree?: boolean): T;
     value_merge: T;
@@ -40,7 +40,10 @@ export declare class StateNode<T> extends SimpleSubject<T> {
 export declare class StateTree<T> {
     root: StateNode<T>;
     notifications: StateNotification[];
+    subsription: Subscription<StateNotification>;
     constructor();
+    subscribe(subscriber: Subscriber<StateNotification>): number;
+    unsubscribe(iSubscriber: number): void;
     notify_getValue<U>(stateNodeFullPath: string, value: U): void;
     notify_setValue<U>(stateNodeFullPath: string, value: U, oldValue: U): void;
     notify_addItems<U>(stateNodeFullPath: string, items: U[]): void;

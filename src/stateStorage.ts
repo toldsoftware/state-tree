@@ -74,8 +74,8 @@ export class SyncStateStorage implements StateStorage {
             await this.provider.appendStateChange(...pendingSnapshot);
 
             resolvesSnapshot.forEach(x => x());
-            this.pending = this.pending.splice(0, pendingSnapshot.length);
-            this.pending_resolves = this.pending_resolves.splice(0, pendingSnapshot.length);
+            this.pending.splice(0, pendingSnapshot.length);
+            this.pending_resolves.splice(0, pendingSnapshot.length);
         } catch (err) { }
 
         this.syncBusy = false;

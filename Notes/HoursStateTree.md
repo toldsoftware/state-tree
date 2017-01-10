@@ -65,10 +65,22 @@
 
 - Test Array Insert
 
-##
+## 21:23-22:31
 
+- Create StateSync
+- Serialize State Changes to Storage
 - Convert Changes of StateTree to StateChanges 
 
+##
+
+- Add Uuid
+- Test with Blob Storage (Optional Dependency)
+
+##
+
+- Test Array Edge Cases
+	- Remove all items
+	- Add Items on empty array
 
 ## 
 

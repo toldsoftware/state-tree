@@ -50,27 +50,27 @@ describe('SyncStateStorage', () => {
     }, 1000);
 
     it('should store and retrieve multiple state changes', async (done) => {
-        let storage = new SyncStateStorage(new MemoryStateStorage(), 250);
+        let storage = new SyncStateStorage(new MemoryStateStorage(), 100);
 
         expect(await storage.getStateChanges()).toEqual([]);
         storage.appendStateChange('A');
-        await delay(50);
+        await delay(5);
 
         expect(await storage.getStateChanges()).toEqual([]);
         storage.appendStateChange('B');
-        await delay(50);
+        await delay(5);
 
         expect(await storage.getStateChanges()).toEqual([]);
         storage.appendStateChange('C');
-        await delay(50);
+        await delay(5);
 
         expect(await storage.getStateChanges()).toEqual([]);
         storage.appendStateChange('D');
-        await delay(50);
+        await delay(5);
 
         expect(await storage.getStateChanges()).toEqual([]);
         storage.appendStateChange('E');
-        await delay(100);
+        await delay(250);
 
         expect(await storage.getStateChanges()).toEqual(['A', 'B', 'C', 'D', 'E']);
 

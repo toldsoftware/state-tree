@@ -52,6 +52,15 @@
 - Test changes of branch with nested values
 - Test changes to tree structure
 
+## 19:23-19:51
+
+- Record addItem
+- Test Array Push
+
+## 20:30-21:09
+
+- Add Array Insert
+
 ##
 
 - Convert Changes of StateTree to StateChanges 

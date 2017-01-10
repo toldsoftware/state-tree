@@ -1,4 +1,4 @@
-import { toStateTree, StateNotificationKind, DELETE } from './';
+import { toStateTree, StateNotificationKind, DELETE, ArrayEventArgs } from './';
 
 describe('stateTree with simple state', () => {
 
@@ -14,7 +14,7 @@ describe('stateTree with simple state', () => {
         let stateTree = toStateTree(state);
         let v = stateTree.text.value;
         expect(stateTree.notifications.length).toEqual(1);
-        expect(stateTree.notifications[0].kind).toEqual(StateNotificationKind.getValue);
+        expect(stateTree.notifications[0].kind).toEqual(StateNotificationKind[StateNotificationKind.getValue]);
         expect(stateTree.notifications[0].stateNodeFullPath).toEqual('.text');
         expect(stateTree.notifications[0].valueJson).toEqual(JSON.stringify('A'));
     });
@@ -23,7 +23,7 @@ describe('stateTree with simple state', () => {
         let stateTree = toStateTree(state);
         stateTree.text.value = 'B';
         expect(stateTree.notifications.length).toEqual(1);
-        expect(stateTree.notifications[0].kind).toEqual(StateNotificationKind.setValue);
+        expect(stateTree.notifications[0].kind).toEqual(StateNotificationKind[StateNotificationKind.setValue]);
         expect(stateTree.notifications[0].stateNodeFullPath).toEqual('.text');
         expect(stateTree.notifications[0].valueJson).toEqual(JSON.stringify('B'));
         expect(stateTree.notifications[0].valueJson_old).toEqual(JSON.stringify('A'));
@@ -32,7 +32,7 @@ describe('stateTree with simple state', () => {
     it('should observe set value', () => {
         let stateTree = toStateTree(state);
         let result = null;
-        stateTree.text.subscribe(x => result = x);
+        stateTree.text.subscribe(x => result = x.value);
         expect(result).toEqual(null);
         stateTree.text.value = 'B';
         expect(result).toEqual('B');
@@ -41,7 +41,7 @@ describe('stateTree with simple state', () => {
     it('should observe set value with .value', () => {
         let stateTree = toStateTree(state);
         let result = null;
-        stateTree.text.subscribe(x => result = x);
+        stateTree.text.subscribe(x => result = x.value);
         expect(result).toEqual(null);
         stateTree.text.value = 'B';
         expect(result).toEqual('B');
@@ -63,7 +63,7 @@ describe('stateTree with nested state', () => {
         let stateTree = toStateTree(state);
         let v = stateTree.nested.nested.text.value;
         expect(stateTree.notifications.length).toEqual(1);
-        expect(stateTree.notifications[0].kind).toEqual(StateNotificationKind.getValue);
+        expect(stateTree.notifications[0].kind).toEqual(StateNotificationKind[StateNotificationKind.getValue]);
         expect(stateTree.notifications[0].stateNodeFullPath).toEqual('.nested.nested.text');
         expect(stateTree.notifications[0].valueJson).toEqual(JSON.stringify('A'));
     });
@@ -74,7 +74,7 @@ describe('stateTree with nested state', () => {
 
         stateTree.nested.nested.text.value = 'B';
         expect(stateTree.notifications.length).toEqual(1);
-        expect(stateTree.notifications[0].kind).toEqual(StateNotificationKind.setValue);
+        expect(stateTree.notifications[0].kind).toEqual(StateNotificationKind[StateNotificationKind.setValue]);
         expect(stateTree.notifications[0].stateNodeFullPath).toEqual('.nested.nested.text');
         expect(stateTree.notifications[0].valueJson).toEqual(JSON.stringify('B'));
         expect(stateTree.notifications[0].valueJson_old).toEqual(JSON.stringify('A'));
@@ -83,7 +83,7 @@ describe('stateTree with nested state', () => {
     it('should observe set value', () => {
         let stateTree = toStateTree(state);
         let result = null;
-        stateTree.nested.nested.text.subscribe(x => result = x);
+        stateTree.nested.nested.text.subscribe(x => result = x.value);
         expect(result).toEqual(null);
         stateTree.nested.nested.text.value = 'B';
         expect(result).toEqual('B');
@@ -208,7 +208,7 @@ describe('stateTree with array', () => {
         let stateTree = toStateTree(state);
         let v = stateTree.items.asArray<Item>()[0].text.value;
         expect(stateTree.notifications.length).toEqual(1);
-        expect(stateTree.notifications[0].kind).toEqual(StateNotificationKind.getValue);
+        expect(stateTree.notifications[0].kind).toEqual(StateNotificationKind[StateNotificationKind.getValue]);
         expect(stateTree.notifications[0].stateNodeFullPath).toEqual('.items[0].text');
         expect(stateTree.notifications[0].valueJson).toEqual(JSON.stringify('A'));
     });
@@ -219,7 +219,7 @@ describe('stateTree with array', () => {
 
         stateTree.items.asArray<Item>()[0].text.value = 'B';
         expect(stateTree.notifications.length).toEqual(1);
-        expect(stateTree.notifications[0].kind).toEqual(StateNotificationKind.setValue);
+        expect(stateTree.notifications[0].kind).toEqual(StateNotificationKind[StateNotificationKind.setValue]);
         expect(stateTree.notifications[0].stateNodeFullPath).toEqual('.items[0].text');
         expect(stateTree.notifications[0].valueJson).toEqual(JSON.stringify('B'));
         expect(stateTree.notifications[0].valueJson_old).toEqual(JSON.stringify('A'));
@@ -227,11 +227,11 @@ describe('stateTree with array', () => {
 
     it('should observe set value', () => {
         let stateTree = toStateTree(state);
-        let result = null;
-        stateTree.items.asArray<Item>()[0].text.subscribe(x => result = x);
-        expect(result).toEqual(null);
+        let n = null;
+        stateTree.items.asArray<Item>()[0].text.subscribe(x => n = x.value);
+        expect(n).toEqual(null);
         stateTree.items.asArray<Item>()[0].text.value = 'B';
-        expect(result).toEqual('B');
+        expect(n).toEqual('B');
     });
 
     it('should reconstruct state tree after state change', () => {
@@ -245,6 +245,82 @@ describe('stateTree with array', () => {
                 { text: 'C' },
             ]
         });
+    });
+
+    it('should support array push', () => {
+        let stateTree = toStateTree(state);
+        let before = stateTree.root.value;
+        expect(before).toEqual({
+            items: [
+                { text: 'A' },
+                { text: 'B' },
+                { text: 'C' },
+            ]
+        });
+
+        stateTree.items.asArrayOperators<Item>().push({ text: 'D' });
+        let result = stateTree.root.value;
+        expect(result).toEqual({
+            items: [
+                { text: 'A' },
+                { text: 'B' },
+                { text: 'C' },
+                { text: 'D' },
+            ]
+        });
+    });
+
+    it('should notify tree on array push', () => {
+        let stateTree = toStateTree(state);
+        stateTree.items.asArrayOperators<Item>().push({ text: 'D' });
+
+        expect(stateTree.notifications.length).toEqual(1);
+        expect(stateTree.notifications[0].kind).toEqual(StateNotificationKind[StateNotificationKind.addItems]);
+        expect(stateTree.notifications[0].stateNodeFullPath).toEqual('.items[3]');
+        expect(stateTree.notifications[0].valueJson).toEqual(JSON.stringify([{ text: 'D' }]));
+    });
+
+    it('should notify subscriber on array push', () => {
+        let stateTree = toStateTree(state);
+
+        let n: ArrayEventArgs<any> = null;
+        stateTree.items.subscribeArray(x => n = x);
+        stateTree.items.asArrayOperators<Item>().push({ text: 'D' });
+
+        expect(n.addedItems).toEqual([{ text: 'D' }]);
+    });
+
+    it('should have correct paths and values after array insert', () => {
+        let stateTree = toStateTree(state);
+
+        let n: ArrayEventArgs<any> = null;
+        stateTree.items.subscribeArray(x => n = x);
+        stateTree.items.asArrayOperators<Item>().insert(1, { text: 'AA' });
+
+        expect(stateTree.items.asArray<Item>()[0].fullPath).toEqual('.items[0]');
+        expect(stateTree.items.asArray<Item>()[1].fullPath).toEqual('.items[1]');
+        expect(stateTree.items.asArray<Item>()[2].fullPath).toEqual('.items[2]');
+        expect(stateTree.items.asArray<Item>()[3].fullPath).toEqual('.items[3]');
+
+        expect(stateTree.items.asArray<Item>()[0].text.value).toEqual('A');
+        expect(stateTree.items.asArray<Item>()[1].text.value).toEqual('AA');
+        expect(stateTree.items.asArray<Item>()[2].text.value).toEqual('B');
+        expect(stateTree.items.asArray<Item>()[3].text.value).toEqual('C');
+    });
+
+    it('should notify on array insert', () => {
+        let stateTree = toStateTree(state);
+
+        let n: ArrayEventArgs<any> = null;
+        stateTree.items.subscribeArray(x => n = x);
+        stateTree.items.asArrayOperators<Item>().insert(1, { text: 'AA' });
+
+        expect(n.addedItems).toEqual([{ text: 'AA' }]);
+
+        expect(stateTree.notifications.length).toEqual(1);
+        expect(stateTree.notifications[0].kind).toEqual(StateNotificationKind[StateNotificationKind.addItems]);
+        expect(stateTree.notifications[0].stateNodeFullPath).toEqual('.items[1]');
+        expect(stateTree.notifications[0].valueJson).toEqual(JSON.stringify([{ text: 'AA' }]));
     });
 
 });
